@@ -1,6 +1,6 @@
 
  a {
-    color: #ff4081; //pinkA200
+    color: #0288d1;
     text-decoration: none;
  }
 
@@ -26,7 +26,7 @@ body {
     text-transform: uppercase;
 }
 
-.mui-app-content-canvas {
+.inlineBlock {
     display: inline-block;
 }
 

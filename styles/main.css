@@ -110,3 +110,7 @@ input::-webkit-inner-spin-button {
      font-size: 60%;
      color: #757575;
  }
+
+ input {
+     margin-bottom: 100px;
+ }

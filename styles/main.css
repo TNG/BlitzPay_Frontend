@@ -33,7 +33,7 @@ body {
 }
 
 .inlineBlock {
-    display: inline-block;
+
 }
 
 .centered {
@@ -99,7 +99,8 @@ input::-webkit-inner-spin-button {
      padding:10px;
  }
  #realContent {
-     padding-bottom:60px; /* Height of the footer element */
+     padding:24px 24px 60px 24px; /* Height of the footer element */
+     display: inline-block;
  }
  #footer {
      width:100%;
@@ -109,8 +110,4 @@ input::-webkit-inner-spin-button {
      left:0;
      font-size: 60%;
      color: #757575;
- }
-
- input {
-     margin-bottom: 100px;
  }

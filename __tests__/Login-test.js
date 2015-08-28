@@ -9,9 +9,7 @@ describe('Login page', function () {
 
     var LoadingState = require('../src/components/LoadingState.js');
     var Config = require('../src/constants/Config');
-    var UserActions = {
-        loginUser: function() {}
-    };
+
 
     it('should have correct loading state', function () {
         var Mock = React.createClass({
@@ -25,7 +23,7 @@ describe('Login page', function () {
             <Login
                 LoadingState={LoadingState}
                 Config={Config}
-                UserActions={UserActions}
+                UserActions={{}}
                 >
                 <Mock />
                 <Mock />
@@ -46,6 +44,10 @@ describe('Login page', function () {
                 return (<div />);
             }
         });
+
+        var UserActions = {
+            loginUser: function() {}
+        };
 
         var login = TestUtils.renderIntoDocument(
             <Login
@@ -82,7 +84,7 @@ describe('Login page', function () {
             <Login
                 LoadingState={LoadingState}
                 Config={Config}
-                UserActions={UserActions}
+                UserActions={{}}
                 >
                 <Mock />
                 <Mock />
@@ -97,6 +99,42 @@ describe('Login page', function () {
         TestUtils.Simulate.submit(form);
 
         expect(login.state.loadingState).toBe('LOADED');
+    });
+
+    it('should call loginUser on form submit', function () {
+        var Mock = React.createClass({
+            validate: function() {},
+            isValid: function() {return true;},
+            getValue: function() {},
+            render: function () {
+                return (<div />);
+            }
+        });
+
+        var loginUserMock = jest.genMockFunction();
+
+        var UserActions = {
+            loginUser: loginUserMock
+        };
+
+        var login = TestUtils.renderIntoDocument(
+            <Login
+                LoadingState={LoadingState}
+                Config={Config}
+                UserActions={UserActions}
+                >
+                <Mock />
+                <Mock />
+                <Mock />
+                <Mock />
+            </Login>
+        );
+
+        var form = TestUtils.findRenderedDOMComponentWithTag(login, 'form');
+        TestUtils.Simulate.submit(form);
+
+        expect(loginUserMock).toBeCalled();
+
     });
 
 });

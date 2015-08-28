@@ -12,10 +12,32 @@ describe('Login page', function () {
     var UserActions = {
         loginUser: function() {}
     };
-    
+
     it('should have correct loading state', function () {
+        var Mock = React.createClass({
+            getValue: function() {},
+            render: function () {
+                return (<div />);
+            }
+        });
 
+        var login = TestUtils.renderIntoDocument(
+            <Login
+                LoadingState={LoadingState}
+                Config={Config}
+                UserActions={UserActions}
+                >
+                <Mock />
+                <Mock />
+                <Mock />
+                <Mock />
+            </Login>
+        );
 
+        expect(login.state.loadingState).toBe('LOADED');
+    });
+
+    it('should change loading state on form submit', function () {
         var Mock = React.createClass({
             validate: function() {},
             isValid: function() {return true;},
@@ -44,8 +66,37 @@ describe('Login page', function () {
         TestUtils.Simulate.submit(form);
 
         expect(login.state.loadingState).toBe('LOADING');
+    });
 
+    it('should not change loading state on form submit for invalid secret', function () {
+        var Mock = React.createClass({
+            validate: function() {},
+            isValid: function() {return false;},
+            getValue: function() {},
+            render: function () {
+                return (<div />);
+            }
+        });
 
+        var login = TestUtils.renderIntoDocument(
+            <Login
+                LoadingState={LoadingState}
+                Config={Config}
+                UserActions={UserActions}
+                >
+                <Mock />
+                <Mock />
+                <Mock />
+                <Mock />
+            </Login>
+        );
+
+        expect(login.state.loadingState).toBe('LOADED');
+
+        var form = TestUtils.findRenderedDOMComponentWithTag(login, 'form');
+        TestUtils.Simulate.submit(form);
+
+        expect(login.state.loadingState).toBe('LOADED');
     });
 
 });

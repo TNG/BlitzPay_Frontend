@@ -27,7 +27,7 @@ env:
         #
         # User specific env variables
         - secure: "MA7q5zQUcOj7qWSU4GwxVZw1QrIfZ5kMYZuQaAxLmEdrW8VYeWt/c0MLxkv9PzxhteqepH2dUSbEOBXV05gPv7Lq+8xqpMjp46nO/lAWDFVwqgqj81cHrn2YBcavxh7pB8dizNaIUuFyHUMxLjqwEg0kHWqaJNSeaPBfd3OqdBfkDowzKJNPMEvJPrF7Ufxt3/m01g7LfCUzUhCrGmJlZPmqWnQyLrIvPadtwDH2sD38DAdZi8k9YZmLLm7fb0rOk92jV8INFEv/H98w4StLYvw6UkNihTBP2kXIZ8AcE+WC1hA0J5u4SRfh8p+fxW+5yssUzMVUifw/xarF4d6OfGDqC73/hSf8WInTB1JPkc7H/riJZ+G4rjLr2Nn/fOlhzPLr+sV5A6yc8UpkGd7BKp5vFJ5+M1LiKRU6ZRC5dipe0f+EdpK0oglB6ZotqUobp+IxZm7P34RI0WklpYanqDyOziQJCHkUpRKUd/uttOsRCvR3SLneZzH/gr8VUJOwyTEIw4WBKmscTN0bKbgSlQEdu/QLLnMJOV6JzFAeciscJCBMeMnnW/jTT2fn0XeBuV3l8AtkG3/AjQ1HLoQ8pbsqr9JZPAzPik6cRVnXZ03hvwolxvwlnCS+e5i7SGcEw9GZZcBZX9tO+dsmMzuf2iZK5QgDSFof7vHT5EFxIaI="
-        - GH_OWNER: fhinkel
+        - GH_OWNER: knaufk
         - GH_PROJECT_NAME: beertopeer
         # This .travis.yml file instructs travis-ci.org to build your master branch using `yeoman build`
         # and deploy the output to your project's gh-pages branch.

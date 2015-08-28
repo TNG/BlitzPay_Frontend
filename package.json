@@ -28,7 +28,6 @@
     "sjcl": "^1.0.3"
   },
   "devDependencies": {
-    "6to5-jest": "^3.0.0",
     "babel": "^4.0.0",
     "babel-loader": "^4.0.0",
     "chai": "~3.0.0",

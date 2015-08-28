@@ -10,9 +10,14 @@ describe('Login page', function () {
 
         var LoadingState = require('../src/components/LoadingState.js');
         var Config = require('../src/constants/Config');
-        var UserActions = {}; //require('../src/actions/UserActions');
+        var UserActions = {
+            loginUser: function() {}
+        };
 
         var RippleSecretInput = React.createClass({
+            validate: function() {},
+            isValid: function() {return true;},
+            getValue: function() {},
             render: function () {
                 return (<div />);
             }
@@ -21,13 +26,16 @@ describe('Login page', function () {
             render: function () {
                 return (<div />);
             }
-        }); //require('../src/components/Progress.react');
+        });
         var RaisedButton = React.createClass({
             render: function () {
                 return (<div />);
             }
         });
         var UsernameInput = React.createClass({
+            validate: function() {},
+            isValid: function() {return true;},
+            getValue: function() {},
             render: function () {
                 return (<div />);
             }
@@ -47,6 +55,11 @@ describe('Login page', function () {
         );
 
         expect(login.state.loadingState).toBe('LOADED');
+
+        var form = TestUtils.findRenderedDOMComponentWithTag(login, 'form');
+        TestUtils.Simulate.submit(form);
+
+        expect(login.state.loadingState).toBe('LOADING');
 
 
     });

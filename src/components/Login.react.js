@@ -59,7 +59,9 @@ var Login = React.createClass({
         return (
             <div>
                 <img src={this.props.Config.serverOptions.url + "/images/logo.png"} width="100" style={{paddingTop: "50px"}}></img>
-                <form onSubmit={this.login} >
+                <form
+                    onSubmit={this.login}
+                >
                     {usernameInput}
                     <br />
                     {rippleSecretInput}

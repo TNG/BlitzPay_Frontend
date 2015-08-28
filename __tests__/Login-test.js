@@ -3,36 +3,20 @@ jest.dontMock('keymirror');
 jest.dontMock('../src/components/LoadingState');
 
 describe('Login page', function () {
+    var React = require('react/addons');
+    var Login = require('../src/components/Login.react');
+    var TestUtils = React.addons.TestUtils;
+
+    var LoadingState = require('../src/components/LoadingState.js');
+    var Config = require('../src/constants/Config');
+    var UserActions = {
+        loginUser: function() {}
+    };
+    
     it('should have correct loading state', function () {
-        var React = require('react/addons');
-        var Login = require('../src/components/Login.react');
-        var TestUtils = React.addons.TestUtils;
 
-        var LoadingState = require('../src/components/LoadingState.js');
-        var Config = require('../src/constants/Config');
-        var UserActions = {
-            loginUser: function() {}
-        };
 
-        var RippleSecretInput = React.createClass({
-            validate: function() {},
-            isValid: function() {return true;},
-            getValue: function() {},
-            render: function () {
-                return (<div />);
-            }
-        });
-        var Progress = React.createClass({
-            render: function () {
-                return (<div />);
-            }
-        });
-        var RaisedButton = React.createClass({
-            render: function () {
-                return (<div />);
-            }
-        });
-        var UsernameInput = React.createClass({
+        var Mock = React.createClass({
             validate: function() {},
             isValid: function() {return true;},
             getValue: function() {},
@@ -47,10 +31,10 @@ describe('Login page', function () {
                 Config={Config}
                 UserActions={UserActions}
                 >
-                <RippleSecretInput />
-                <Progress />
-                <RaisedButton />
-                <UsernameInput />
+                <Mock />
+                <Mock />
+                <Mock />
+                <Mock />
             </Login>
         );
 

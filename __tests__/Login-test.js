@@ -102,10 +102,14 @@ describe('Login page', function () {
     });
 
     it('should call loginUser on form submit', function () {
+        var getValueMock = jest.genMockFunction();
+        getValueMock.mockReturnValueOnce('username').
+            mockReturnValueOnce('secret');
+
         var Mock = React.createClass({
             validate: function() {},
             isValid: function() {return true;},
-            getValue: function() {},
+            getValue: getValueMock,
             render: function () {
                 return (<div />);
             }
@@ -133,7 +137,7 @@ describe('Login page', function () {
         var form = TestUtils.findRenderedDOMComponentWithTag(login, 'form');
         TestUtils.Simulate.submit(form);
 
-        expect(loginUserMock).toBeCalled();
+        expect(loginUserMock).toBeCalledWith('username', 'secret');
 
     });
 

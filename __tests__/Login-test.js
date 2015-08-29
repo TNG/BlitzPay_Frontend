@@ -137,4 +137,32 @@ describe('Login page', function () {
 
     });
 
+    it('should render a form with 7 children', function () {
+        var Mock = React.createClass({
+            validate: function() {},
+            isValid: function() {return true;},
+            getValue: function() {},
+            render: function () {
+                return (<div />);
+            }
+        });
+
+        var login = TestUtils.renderIntoDocument(
+            <Login
+                LoadingState={LoadingState}
+                Config={Config}
+                UserActions={{}}
+                >
+                <Mock />
+                <Mock />
+                <Mock />
+                <Mock />
+            </Login>
+        );
+
+        var form = TestUtils.findRenderedDOMComponentWithTag(login, 'form');
+
+        expect(form.getDOMNode().children.length).toEqual(7);
+    });
+
 });

@@ -13,7 +13,8 @@ describe('Login page', function () {
 
     it('should have correct loading state', function () {
         var Mock = React.createClass({
-            getValue: function() {},
+            getValue: function () {
+            },
             render: function () {
                 return (<div />);
             }
@@ -37,16 +38,21 @@ describe('Login page', function () {
 
     it('should change loading state on form submit', function () {
         var Mock = React.createClass({
-            validate: function() {},
-            isValid: function() {return true;},
-            getValue: function() {},
+            validate: function () {
+            },
+            isValid: function () {
+                return true;
+            },
+            getValue: function () {
+            },
             render: function () {
                 return (<div />);
             }
         });
 
         var UserActions = {
-            loginUser: function() {}
+            loginUser: function () {
+            }
         };
 
         var login = TestUtils.renderIntoDocument(
@@ -72,9 +78,13 @@ describe('Login page', function () {
 
     it('should not change loading state on form submit for invalid secret', function () {
         var Mock = React.createClass({
-            validate: function() {},
-            isValid: function() {return false;},
-            getValue: function() {},
+            validate: function () {
+            },
+            isValid: function () {
+                return false;
+            },
+            getValue: function () {
+            },
             render: function () {
                 return (<div />);
             }
@@ -107,8 +117,11 @@ describe('Login page', function () {
             mockReturnValueOnce('secret');
 
         var Mock = React.createClass({
-            validate: function() {},
-            isValid: function() {return true;},
+            validate: function () {
+            },
+            isValid: function () {
+                return true;
+            },
             getValue: getValueMock,
             render: function () {
                 return (<div />);
@@ -143,9 +156,13 @@ describe('Login page', function () {
 
     it('should render a form with 7 children', function () {
         var Mock = React.createClass({
-            validate: function() {},
-            isValid: function() {return true;},
-            getValue: function() {},
+            validate: function () {
+            },
+            isValid: function () {
+                return true;
+            },
+            getValue: function () {
+            },
             render: function () {
                 return (<div />);
             }

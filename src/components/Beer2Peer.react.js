@@ -26,6 +26,7 @@ var Config = require('../constants/Config');
 var UserActions = require('../actions/UserActions');
 var UsernameInput = require('./UsernameInput');
 
+var RippleService= require('../services/RippleService');
 
 ThemeManager.setTheme(SocialPayTheme);
 
@@ -74,7 +75,7 @@ var Beer2Peer = React.createClass({
                 Config={Config}
                 UserActions={UserActions}
                 >
-                <RippleSecretInput />
+                <RippleSecretInput RippleService={RippleService} />
                 <Progress />
                 <RaisedButton />
                 <UsernameInput />

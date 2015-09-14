@@ -33,11 +33,14 @@ function setUser(name, secret) {
     console.log('Logging in...');
     user.name = name;
     user.rippleSecret = secret;
+    localStorage.setItem("name", name);
+    localStorage.setItem("secret", secret);
     user.rippleAccount = RippleService.getAccountFromSecret(secret);
 }
 
 function logout() {
     console.log('Logging out...');
+    localStorage.clear();
     user.name = '';
     user.rippleSecret = '';
     user.rippleAccount = '';

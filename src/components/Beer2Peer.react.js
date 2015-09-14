@@ -9,6 +9,7 @@ var AppCanvas = require('material-ui').AppCanvas;
 var SocialPayTheme = require('../themes/socialPayTheme');
 
 var UserStore = require('../stores/UserStore');
+var UserActions = require('../actions/UserActions');
 
 var Header = require('./Header.react');
 var Footer = require('./Footer.react');
@@ -22,6 +23,10 @@ ThemeManager.setTheme(SocialPayTheme);
 var Beer2Peer = React.createClass({
 
     getInitialState: function() {
+        if(localStorage.getItem("name") && localStorage.getItem("secret")) {
+            console.log("Loading user from localStorage");
+            UserActions.loginUser(localStorage.getItem("name"), localStorage.getItem("secret"));
+        }
         return {
             user: UserStore.getUser()
         };

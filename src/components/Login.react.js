@@ -25,7 +25,8 @@ var Login = React.createClass({
         return {
             loadingState: LoadingState.LOADED,
             pinForm: this.props.pin,
-            remember: false
+            remember: false,
+            isInvalid: this.props.isInvalid
         };
     },
 
@@ -34,12 +35,21 @@ var Login = React.createClass({
         this.refs.usernameInput.validate();
         this.refs.rippleSecretInput.validate();
         if (this.refs.rippleSecretInput.isValid() && this.refs.usernameInput.isValid()) {
-            this.setLoading(LoadingState.LOADING);
+            this.setState({
+                loadingState: LoadingState.LOADING
+            });
             var username = this.refs.usernameInput.getValue();
             var secret = this.refs.rippleSecretInput.getValue();
             var pin = "";
             if (this.state.remember) {
                 pin = this.refs.pinInput.getValue();
+                if(pin === "") {
+                    this.setState({
+                       pinErrorText: "PIN can not be empty",
+                        loadingState: LoadingState.LOADED
+                    });
+                    return;
+                }
             }
             UserActions.loginUser(username, secret, pin);
         }
@@ -47,12 +57,19 @@ var Login = React.createClass({
 
     loginWithPin: function (e) {
         e.preventDefault();
-        this.setLoading(LoadingState.LOADING);
+        this.setState({
+            loadingState: LoadingState.LOADING
+        });
 
         var pin = this.refs.pinInput.getValue();
         UserActions.loginUserWithPin(pin);
+    },
 
-        this.setLoading(LoadingState.LOADED);
+    componentWillReceiveProps: function (nextProps) {
+        this.setState({
+            isInvalid: nextProps.isInvalid,
+            loadingState: LoadingState.LOADED
+        });
     },
 
     render: function () {
@@ -76,24 +93,13 @@ var Login = React.createClass({
     switchForm: function () {
         this.setState({
             loadingState: LoadingState.LOADED,
-            pinForm: false,
-            remember: false
+            pinForm: false
         });
     },
 
     changeRemember: function (event, toggled) {
         this.setState({
-            loadingState: LoadingState.LOADED,
-            pinForm: this.state.pinForm,
             remember: toggled
-        });
-    },
-
-    setLoading: function (loadingState) {
-        this.setState({
-            loadingState: loadingState,
-            pinForm: this.state.pinForm,
-            remember: this.state.remember
         });
     },
 
@@ -118,9 +124,12 @@ var Login = React.createClass({
 
     getPinForm: function (progress) {
         var error;
-        if (this.props.isInvalid) {
+        if (this.state.pinErrorText) {
+            error = this.state.pinErrorText;
+        } else if (this.state.isInvalid) {
             error = "Invalid PIN";
         }
+
         return (
             <form onSubmit={this.loginWithPin}>
                 <h3>Welcome back, {localStorage.getItem("name")}!</h3>
@@ -128,6 +137,7 @@ var Login = React.createClass({
                            type="password"
                            floatingLabelText="Encryption PIN"
                            errorText={error}
+                           onChange={this._handlePINInputChange}
                            style={{width: '18em'}}/>
                 <br/>
                 <br/>
@@ -145,7 +155,9 @@ var Login = React.createClass({
         if (this.state.remember) {
             remember = <TextField ref="pinInput"
                                   type="password"
-                                  hintText="Encryption PIN"
+                                  floatingLabelText="Encryption PIN"
+                                  onChange={this._handlePINInputChange}
+                                  errorText={this.state.pinErrorText}
                                   style={{width: '18em'}}/>;
         }
         return (
@@ -167,6 +179,14 @@ var Login = React.createClass({
                 {progress}
             </form>
         );
+    },
+
+    _handlePINInputChange: function _handlePINInputChange(e) {
+        var value = e.target.value;
+        this.setState({
+            isInvalid: false,
+            pinErrorText: value.length >= 5 ? '' : 'The PIN must have at least 5 digits.'
+        });
     }
 });
 

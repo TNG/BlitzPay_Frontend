@@ -23,10 +23,6 @@ ThemeManager.setTheme(SocialPayTheme);
 var Beer2Peer = React.createClass({
 
     getInitialState: function() {
-        if(localStorage.getItem("name") && localStorage.getItem("secret")) {
-            console.log("Loading user from localStorage");
-            UserActions.loginUser(localStorage.getItem("name"), localStorage.getItem("secret"));
-        }
         return {
             user: UserStore.getUser()
         };
@@ -64,7 +60,8 @@ var Beer2Peer = React.createClass({
         var mainSection;
         var header;
         if (!this.state.user.isLoggedIn()) {
-            mainSection = <Login />;
+            mainSection = <Login isInvalid = {this.state.user.isInvalid()}
+                                 pin = {localStorage.getItem("name")}/>;
         } else {
             header = <Header user = {this.state.user}/>;
             mainSection = <RouteHandler user = {this.state.user}/>;

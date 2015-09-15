@@ -9,18 +9,27 @@ var Dispatcher = require('../dispatcher/Beer2PeerDispatcher');
 
 var UserActions = {
     /**
-     * @param  {string} text
+     * @param username
+     * @param secret
+     * @param pin
      */
-    loginUser: function(username, secret) {
+    loginUser: function(username, secret, pin) {
         Dispatcher.dispatch({
             actionType: UserConstants.USER_CREATE_WITH_SECRET,
             username: username,
-            secret: secret
+            secret: secret,
+            pin: pin
+        });
+    },
+    loginUserWithPin: function(pin) {
+        Dispatcher.dispatch({
+            actionType: UserConstants.USER_CREATE_WITH_PIN,
+            pin: pin
         });
     },
     logout: function() {
         Dispatcher.dispatch({
-           actionType: UserConstants.USER_LOGOUT,
+           actionType: UserConstants.USER_LOGOUT
         });
     },
     changeBalance: function(balances) {

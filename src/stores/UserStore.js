@@ -53,6 +53,7 @@ function encryptUser(name, secret, pin) {
 
     setUser(name, secret);
 }
+
 function decryptUser(pin) {
     var salt = CryptoJS.enc.Hex.parse(localStorage.getItem("salt"));
     var iv = CryptoJS.enc.Hex.parse(localStorage.getItem("iv"));
@@ -67,11 +68,10 @@ function decryptUser(pin) {
         if (RippleService.isSecretValid(secret)) {
             setUser(name, secret);
         } else {
-            throw "Invalid PIN";
+            user.name = name;
         }
     } catch (e) {
         user.name = name;
-        console.log("Invalid PIN");
     }
 
 }
@@ -122,7 +122,7 @@ var UserStore = assign({}, EventEmitter.prototype, {
 });
 
 Beer2PeerDispatcher.register(function (action) {
-    var username, secret, pin, account, balances;
+    var username, secret, pin, balances;
     switch (action.actionType) {
         case UserConstants.USER_CREATE_WITH_SECRET:
             username = action.username.trim();

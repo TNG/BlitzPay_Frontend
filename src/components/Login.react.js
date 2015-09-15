@@ -34,15 +34,11 @@ var Login = React.createClass({
         this.refs.usernameInput.validate();
         this.refs.rippleSecretInput.validate();
         if (this.refs.rippleSecretInput.isValid() && this.refs.usernameInput.isValid()) {
-            this.setState({
-                loadingState: LoadingState.LOADING,
-                pinForm: false,
-                remember: this.state.remember
-            });
+            this.setLoading(LoadingState.LOADING);
             var username = this.refs.usernameInput.getValue();
             var secret = this.refs.rippleSecretInput.getValue();
             var pin = "";
-            if (this.refs.pinInput) {
+            if (this.state.remember) {
                 pin = this.refs.pinInput.getValue();
             }
             UserActions.loginUser(username, secret, pin);
@@ -51,35 +47,63 @@ var Login = React.createClass({
 
     loginWithPin: function (e) {
         e.preventDefault();
-        this.setState({
-            loadingState: LoadingState.LOADING,
-            pinForm: true,
-            remember: false
-        });
+        this.setLoading(LoadingState.LOADING);
+
         var pin = this.refs.pinInput.getValue();
         UserActions.loginUserWithPin(pin);
+
+        this.setLoading(LoadingState.LOADED);
+    },
+
+    render: function () {
+        var progress = this.getProgress();
+
+        var form;
+        if (this.state.pinForm) {
+            form = this.getPinForm(progress);
+        } else {
+            form = this.getDefaultForm(progress);
+        }
+
+        return (
+            <div>
+                <img src={Config.serverOptions.url + "/images/logo.png"} width="100" style={{paddingTop: "50px"}}></img>
+                {form}
+            </div>
+        );
+    },
+
+    switchForm: function () {
         this.setState({
             loadingState: LoadingState.LOADED,
-            pinForm: true,
+            pinForm: false,
             remember: false
         });
     },
 
-    render: function () {
+    changeRemember: function (event, toggled) {
+        this.setState({
+            loadingState: LoadingState.LOADED,
+            pinForm: this.state.pinForm,
+            remember: toggled
+        });
+    },
 
+    setLoading: function (loadingState) {
+        this.setState({
+            loadingState: loadingState,
+            pinForm: this.state.pinForm,
+            remember: this.state.remember
+        });
+    },
+
+    getProgress: function () {
         var style = {
             fontSize: "80%",
             color: "#757575"
         };
 
         var progress;
-        var form;
-        var error;
-
-        if (this.props.isInvalid) {
-            error = "Invalid PIN";
-        }
-
         if (this.state.loadingState === LoadingState.LOADING) {
             progress = <Progress />;
         } else {
@@ -89,9 +113,17 @@ var Login = React.createClass({
                 progress = <span style={style}><p>Login with any name and your Ripple secret.</p></span>;
             }
         }
+        return progress;
+    },
 
-        if (this.state.pinForm) {
-            form = <form onSubmit={this.loginWithPin}>
+    getPinForm: function (progress) {
+        var error;
+        if (this.props.isInvalid) {
+            error = "Invalid PIN";
+        }
+        return (
+            <form onSubmit={this.loginWithPin}>
+                <h3>Welcome back, {localStorage.getItem("name")}!</h3>
                 <TextField ref="pinInput"
                            type="password"
                            floatingLabelText="Encryption PIN"
@@ -103,17 +135,21 @@ var Login = React.createClass({
                 {progress}
                 <br/>
                 <br/>
-                <RaisedButton onClick={this.switchForm} label='Switch to normal login'/>
-            </form>;
-        } else {
-            var remember;
-            if (this.state.remember) {
-                remember = <TextField ref="pinInput"
-                                      type="password"
-                                      hintText="Encryption PIN"
-                                      style={{width: '18em'}}/>;
-            }
-            form = <form onSubmit={this.login}>
+                <RaisedButton onClick={this.switchForm} label='Switch to regular login'/>
+            </form>
+        );
+    },
+
+    getDefaultForm: function (progress) {
+        var remember;
+        if (this.state.remember) {
+            remember = <TextField ref="pinInput"
+                                  type="password"
+                                  hintText="Encryption PIN"
+                                  style={{width: '18em'}}/>;
+        }
+        return (
+            <form onSubmit={this.login}>
                 <UsernameInput ref="usernameInput"/>
                 <br />
                 <RippleSecretInput ref="rippleSecretInput"/>
@@ -129,31 +165,8 @@ var Login = React.createClass({
                 <br/>
                 <RaisedButton type="submit" label='Login' primary={true}/>
                 {progress}
-            </form>;
-        }
-
-        return (
-            <div>
-                <img src={Config.serverOptions.url + "/images/logo.png"} width="100" style={{paddingTop: "50px"}}></img>
-                {form}
-            </div>
+            </form>
         );
-    },
-
-    switchForm: function () {
-        this.setState({
-            loadingState: LoadingState.LOADED,
-            pinState: false,
-            remember: false
-        });
-    },
-
-    changeRemember: function (event, toggled) {
-        this.setState({
-            loadingState: LoadingState.LOADED,
-            pinState: false,
-            remember: toggled
-        });
     }
 });
 

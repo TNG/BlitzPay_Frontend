@@ -43,9 +43,9 @@ var Login = React.createClass({
             var pin = "";
             if (this.state.remember) {
                 pin = this.refs.pinInput.getValue();
-                if(pin === "") {
+                if (pin === "") {
                     this.setState({
-                       pinErrorText: "PIN can not be empty",
+                        pinErrorText: "PIN can not be empty",
                         loadingState: LoadingState.LOADED
                     });
                     return;
@@ -90,19 +90,6 @@ var Login = React.createClass({
         );
     },
 
-    switchForm: function () {
-        this.setState({
-            loadingState: LoadingState.LOADED,
-            pinForm: false
-        });
-    },
-
-    changeRemember: function (event, toggled) {
-        this.setState({
-            remember: toggled
-        });
-    },
-
     getProgress: function () {
         var style = {
             fontSize: "80%",
@@ -145,7 +132,7 @@ var Login = React.createClass({
                 {progress}
                 <br/>
                 <br/>
-                <RaisedButton onClick={this.switchForm} label='Switch to regular login'/>
+                <RaisedButton onClick={this._handleFormSwitch} label='Switch to regular login'/>
             </form>
         );
     },
@@ -170,7 +157,7 @@ var Login = React.createClass({
                 <Toggle
                     ref="remember"
                     label="Remember me?"
-                    onToggle={this.changeRemember}
+                    onToggle={this._handleRememberChange}
                     style={{textAlign: "left"}}/>
                 {remember}
                 <br/>
@@ -186,6 +173,19 @@ var Login = React.createClass({
         this.setState({
             isInvalid: false,
             pinErrorText: value.length >= 5 ? '' : 'The PIN must have at least 5 digits.'
+        });
+    },
+
+    _handleFormSwitch: function () {
+        this.setState({
+            loadingState: LoadingState.LOADED,
+            pinForm: false
+        });
+    },
+
+    _handleRememberChange: function (event, toggled) {
+        this.setState({
+            remember: toggled
         });
     }
 });

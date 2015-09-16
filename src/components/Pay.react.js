@@ -44,11 +44,16 @@ var Pay = React.createClass({
         var secret = user.rippleSecret;
         if (!secret) {
             var pin = this.refs.pinField.getValue();
+            if(pin.length < 5) {
+                this.setState({
+                    pinError: "The PIN must have at least 5 digits."
+                });
+                return;
+            }
             secret = this.decryptSecret(pin);
             if(!secret) {
                 this.setState({
-                    errorMessage: "Invalid PIN! Try again?",
-                    loadingState: LoadingState.LOADED
+                    pinError: "Invalid PIN!"
                 });
                 return;
             }
@@ -81,7 +86,7 @@ var Pay = React.createClass({
     },
 
     componentDidMount: function () {
-        $.get(Config.serverOptions.url + ':' + Config.serverOptions.port + '/event/' + this.props.params.eventCode, function (data, status) {
+        $.get(Config.serverOptions.url + ':' + Config.serverOptions.port + '/event/' + this.props.params.eventCode, function (data) {
             this.setState({
                 eventName: data.eventName,
                 totalAmount: data.totalAmount,
@@ -99,6 +104,20 @@ var Pay = React.createClass({
 
     render: function () {
         var error = this.state.pinError;
+        var pinField;
+        if(localStorage.getItem("account")) {
+            pinField = (
+                <div>
+                    <TextField ref="pinField"
+                               type="password"
+                               floatingLabelText="Secret decryption PIN"
+                               errorText={error}
+                               onChange={this._handlePINInputChange}
+                               style={{width: '18em'}}/>
+                    <br/>
+                </div>
+            );
+        }
 
         if (this.state.loadingState === LoadingState.LOADING) {
             return (<Progress message={this.state.loadingMessage}/>);
@@ -110,7 +129,7 @@ var Pay = React.createClass({
                     <ErrorMessage message={this.state.errorMessage}/>
 
                     <p><b>{this.state.eventCreator}</b> has requested
-                        <b>{this.state.totalAmount} {this.state.currency}</b> from the group.</p>
+                        <b> {this.state.totalAmount} {this.state.currency}</b> from the group.</p>
 
                     <form onSubmit={this.onSubmitPayment}>
                         <TextField ref="amountField"
@@ -121,13 +140,7 @@ var Pay = React.createClass({
                                    floatingLabelText="EUR"
                             />
                         <br/>
-                        <TextField ref="pinField"
-                                   type="password"
-                                   floatingLabelText="Secret decryption PIN"
-                                   error={error}
-                                   onChange={this._handlePINInputChange}
-                                   style={{width: '18em'}}/>
-                        <br/>
+                        {pinField}
                         <br/>
                         <RaisedButton type="submit" label="Pay!" primary={true}/>
                     </form>

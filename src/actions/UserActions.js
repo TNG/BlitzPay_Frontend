@@ -21,10 +21,11 @@ var UserActions = {
             pin: pin
         });
     },
-    loginUserWithPin: function(pin) {
+    directLogin: function(username, account) {
         Dispatcher.dispatch({
-            actionType: UserConstants.USER_CREATE_WITH_PIN,
-            pin: pin
+            actionType: UserConstants.USER_DIRECT_LOGIN,
+            username: username,
+            account: account
         });
     },
     logout: function() {

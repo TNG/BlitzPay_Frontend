@@ -22,18 +22,22 @@ var {Progress, LoadingState}  = require('./Progress.react');
 var Login = React.createClass({
 
     getInitialState() {
+        if(localStorage.getItem("name") && localStorage.getItem("account")) {
+            console.log("Loading user from localStorage");
+            UserActions.directLogin(localStorage.getItem("name"), localStorage.getItem("account"));
+        }
         return {
             loadingState: LoadingState.LOADED,
-            pinForm: this.props.pin,
-            remember: false,
-            isInvalid: this.props.isInvalid
+            remember: false
         };
     },
 
     login: function (e) {
         e.preventDefault();
+
         this.refs.usernameInput.validate();
         this.refs.rippleSecretInput.validate();
+
         if (this.refs.rippleSecretInput.isValid() && this.refs.usernameInput.isValid()) {
             this.setState({
                 loadingState: LoadingState.LOADING
@@ -55,14 +59,14 @@ var Login = React.createClass({
         }
     },
 
-    loginWithPin: function (e) {
-        e.preventDefault();
+    directLogin: function () {
         this.setState({
             loadingState: LoadingState.LOADING
         });
 
-        var pin = this.refs.pinInput.getValue();
-        UserActions.loginUserWithPin(pin);
+        var name = localStorage.getItem("name");
+        var account = localStorage.getItem("account");
+        UserActions.directLogin(name, account);
     },
 
     componentWillReceiveProps: function (nextProps) {
@@ -74,13 +78,7 @@ var Login = React.createClass({
 
     render: function () {
         var progress = this.getProgress();
-
-        var form;
-        if (this.state.pinForm) {
-            form = this.getPinForm(progress);
-        } else {
-            form = this.getDefaultForm(progress);
-        }
+        var form = this.getDefaultForm(progress);
 
         return (
             <div>
@@ -100,41 +98,9 @@ var Login = React.createClass({
         if (this.state.loadingState === LoadingState.LOADING) {
             progress = <Progress />;
         } else {
-            if (this.state.pinForm) {
-                progress = <span style={style}><p>Login with your PIN.</p></span>;
-            } else {
-                progress = <span style={style}><p>Login with any name and your Ripple secret.</p></span>;
-            }
+            progress = <span style={style}><p>Login with any name and your Ripple secret.</p></span>;
         }
         return progress;
-    },
-
-    getPinForm: function (progress) {
-        var error;
-        if (this.state.pinErrorText) {
-            error = this.state.pinErrorText;
-        } else if (this.state.isInvalid) {
-            error = "Invalid PIN";
-        }
-
-        return (
-            <form onSubmit={this.loginWithPin}>
-                <h3>Welcome back, {localStorage.getItem("name")}!</h3>
-                <TextField ref="pinInput"
-                           type="password"
-                           floatingLabelText="Encryption PIN"
-                           errorText={error}
-                           onChange={this._handlePINInputChange}
-                           style={{width: '18em'}}/>
-                <br/>
-                <br/>
-                <RaisedButton type="submit" label='Login' primary={true}/>
-                {progress}
-                <br/>
-                <br/>
-                <RaisedButton onClick={this._handleFormSwitch} label='Switch to regular login'/>
-            </form>
-        );
     },
 
     getDefaultForm: function (progress) {

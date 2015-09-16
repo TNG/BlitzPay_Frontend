@@ -22,10 +22,7 @@ var user = {
     rippleSecret: '',
     balances: [],
     isLoggedIn: function () {
-        return this.rippleSecret !== '';
-    },
-    isInvalid: function () {
-        return this.name !== '' && this.rippleSecret === '';
+        return this.name !== '';
     }
 };
 
@@ -40,40 +37,26 @@ function setUser(name, secret) {
     user.rippleAccount = RippleService.getAccountFromSecret(secret);
 }
 
+function directLogin(name, account) {
+    console.log('Logging in...');
+    user.name = name;
+    user.rippleAccount = account;
+}
+
 function encryptUser(name, secret, pin) {
     var salt = CryptoJS.lib.WordArray.random(128 / 8);
     var key = CryptoJS.PBKDF2(pin, salt, {keySize: 128 / 32, iterations: 100});
     var iv = CryptoJS.lib.WordArray.random(128 / 8);
     var secretEncrypted = CryptoJS.AES.encrypt(secret, key, {'iv': iv});
+    var account = RippleService.getAccountFromSecret(secret);
 
     localStorage.setItem("salt", salt);
     localStorage.setItem("iv", iv);
     localStorage.setItem("secret", secretEncrypted);
     localStorage.setItem("name", name);
+    localStorage.setItem("account", account);
 
     setUser(name, secret);
-}
-
-function decryptUser(pin) {
-    var salt = CryptoJS.enc.Hex.parse(localStorage.getItem("salt"));
-    var iv = CryptoJS.enc.Hex.parse(localStorage.getItem("iv"));
-    var secretEncrypted = localStorage.getItem("secret");
-    var name = localStorage.getItem("name");
-
-    var key = CryptoJS.PBKDF2(pin, salt, {keySize: 128 / 32, iterations: 100});
-    var secretDecrypted = CryptoJS.AES.decrypt(secretEncrypted, key, {'iv': iv});
-
-    try {
-        var secret = secretDecrypted.toString(CryptoJS.enc.Utf8);
-        if (RippleService.isSecretValid(secret)) {
-            setUser(name, secret);
-        } else {
-            user.name = name;
-        }
-    } catch (e) {
-        user.name = name;
-    }
-
 }
 
 function logout() {
@@ -87,14 +70,9 @@ function logout() {
 
 var UserStore = assign({}, EventEmitter.prototype, {
 
-    /**
-     * Get the entire collection of TODOs.
-     * @return {object}
-     */
     getUser: function () {
         return user;
     },
-
 
     emitUserChange: function () {
         this.emit(CHANGE_USER_EVENT);
@@ -122,13 +100,13 @@ var UserStore = assign({}, EventEmitter.prototype, {
 });
 
 Beer2PeerDispatcher.register(function (action) {
-    var username, secret, pin, balances;
+    var username, secret, pin, account, balances;
     switch (action.actionType) {
         case UserConstants.USER_CREATE_WITH_SECRET:
             username = action.username.trim();
             secret = action.secret.trim();
             if (!action.pin) {
-                setUser(name, secret);
+                setUser(username, secret);
             } else {
                 pin = action.pin.trim();
                 encryptUser(username, secret, pin);
@@ -136,9 +114,10 @@ Beer2PeerDispatcher.register(function (action) {
             }
             UserStore.emitUserChange();
             break;
-        case UserConstants.USER_CREATE_WITH_PIN:
-            pin = action.pin.trim();
-            decryptUser(pin);
+        case UserConstants.USER_DIRECT_LOGIN:
+            username = action.username.trim();
+            account = action.account.trim();
+            directLogin(username, account);
             UserStore.emitUserChange();
             break;
         case UserConstants.USER_LOGOUT:

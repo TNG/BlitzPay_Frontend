@@ -17,6 +17,7 @@ var keyMirror = require('keymirror');
 var UserStore = require('../stores/UserStore');
 
 var ripple = require('ripple-lib');
+var CryptoJS = require('crypto-js');
 
 var {Progress, LoadingState}  = require('./Progress.react');
 
@@ -27,7 +28,7 @@ var PaymentState = keyMirror({
 
 
 var Pay = React.createClass({
-    getInitialState: function() {
+    getInitialState: function () {
         return {
             loadingState: LoadingState.LOADING,
             paymentState: PaymentState.NOT_PAID,
@@ -36,10 +37,22 @@ var Pay = React.createClass({
         };
     },
 
-    onSubmitPayment: function(e) {
+    onSubmitPayment: function (e) {
         e.preventDefault();
 
         var user = UserStore.getUser();
+        var secret = user.rippleSecret;
+        if (!secret) {
+            var pin = this.refs.pinField.getValue();
+            secret = this.decryptSecret(pin);
+            if(!secret) {
+                this.setState({
+                    errorMessage: "Invalid PIN! Try again?",
+                    loadingState: LoadingState.LOADED
+                });
+                return;
+            }
+        }
 
         var amount = this.refs.amountField.getValue().replace(',', '.');
 
@@ -47,12 +60,12 @@ var Pay = React.createClass({
 
         this.setState({
             loadingState: LoadingState.LOADING,
-            loadingMessage: 'Processing transaction...',
+            loadingMessage: 'Processing transaction...'
         });
 
-        RippleService.pay(user.name, user.rippleSecret, this.state.targetRippleAccountId, rippleAmount, this.props.params.eventCode, function (success) {
+        RippleService.pay(user.name, secret, this.state.targetRippleAccountId, rippleAmount, this.props.params.eventCode, function (success) {
             console.log('payment result ' + success);
-            if(!success) {
+            if (!success) {
                 this.setState({
                     errorMessage: "Payment failed! Try again?",
                     loadingState: LoadingState.LOADED
@@ -67,8 +80,8 @@ var Pay = React.createClass({
         }.bind(this));
     },
 
-    componentDidMount: function() {
-        $.get( Config.serverOptions.url + ':' + Config.serverOptions.port + '/event/'+ this.props.params.eventCode, function(data, status) {
+    componentDidMount: function () {
+        $.get(Config.serverOptions.url + ':' + Config.serverOptions.port + '/event/' + this.props.params.eventCode, function (data, status) {
             this.setState({
                 eventName: data.eventName,
                 totalAmount: data.totalAmount,
@@ -80,34 +93,73 @@ var Pay = React.createClass({
         this.setLoadedState();
     },
 
-    setLoadedState: function() {
+    setLoadedState: function () {
         this.setState({loadingState: LoadingState.LOADED});
     },
 
-    render: function() {
-        if(this.state.loadingState === LoadingState.LOADING) {
-            return (<Progress message = {this.state.loadingMessage}/>);
-        } else if (this.state.paymentState === PaymentState.PAID ){
+    render: function () {
+        var error = this.state.pinError;
+
+        if (this.state.loadingState === LoadingState.LOADING) {
+            return (<Progress message={this.state.loadingMessage}/>);
+        } else if (this.state.paymentState === PaymentState.PAID) {
             return (<div><img src='../images/check.svg' width="80px"/></div>);
         } else {
             return (
                 <div>
                     <ErrorMessage message={this.state.errorMessage}/>
-                    <p><b>{this.state.eventCreator}</b> has requested <b>{this.state.totalAmount} {this.state.currency}</b> from the group.</p>
+
+                    <p><b>{this.state.eventCreator}</b> has requested
+                        <b>{this.state.totalAmount} {this.state.currency}</b> from the group.</p>
+
                     <form onSubmit={this.onSubmitPayment}>
                         <TextField ref="amountField"
                                    style={{width:'18em'}}
                                    hintText="0.00"
                                    step="0.01"
                                    type="number"
-                                   floatingLabelText = "EUR"
-                        />
+                                   floatingLabelText="EUR"
+                            />
+                        <br/>
+                        <TextField ref="pinField"
+                                   type="password"
+                                   floatingLabelText="Secret decryption PIN"
+                                   error={error}
+                                   onChange={this._handlePINInputChange}
+                                   style={{width: '18em'}}/>
                         <br/>
                         <br/>
                         <RaisedButton type="submit" label="Pay!" primary={true}/>
                     </form>
                 </div>
             );
+        }
+    },
+
+    _handlePINInputChange: function _handlePINInputChange(e) {
+        var value = e.target.value;
+        this.setState({
+            pinError: value.length >= 5 ? '' : 'The PIN must have at least 5 digits.'
+        });
+    },
+
+    decryptSecret: function decryptSecret(pin) {
+        var salt = CryptoJS.enc.Hex.parse(localStorage.getItem("salt"));
+        var iv = CryptoJS.enc.Hex.parse(localStorage.getItem("iv"));
+        var secretEncrypted = localStorage.getItem("secret");
+
+        var key = CryptoJS.PBKDF2(pin, salt, {keySize: 128 / 32, iterations: 100});
+        var secretDecrypted = CryptoJS.AES.decrypt(secretEncrypted, key, {'iv': iv});
+
+        try {
+            var secret = secretDecrypted.toString(CryptoJS.enc.Utf8);
+            if (RippleService.isSecretValid(secret)) {
+                return secret;
+            } else {
+                return false;
+            }
+        } catch (e) {
+            return false;
         }
     }
 });

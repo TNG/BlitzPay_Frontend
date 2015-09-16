@@ -28,9 +28,13 @@ var Beer2Peer = React.createClass({
         };
     },
 
-    componentDidMount: function() {
+    componentWillMount: function() {
         UserStore.addUserChangeListener(this.onUserChange);
         UserStore.addBalanceChangeListener(this.setUserFromStore);
+
+        if(localStorage.getItem("name") && localStorage.getItem("account")) {
+            UserActions.directLogin(localStorage.getItem("name"), localStorage.getItem("account"));
+        }
     },
     componentWillUnmount: function() {
         UserStore.removeUserChangeListener(this.onUserChange);
@@ -60,8 +64,7 @@ var Beer2Peer = React.createClass({
         var mainSection;
         var header;
         if (!this.state.user.isLoggedIn()) {
-            mainSection = <Login isInvalid = {this.state.user.isInvalid()}
-                                 pin = {localStorage.getItem("name")}/>;
+            mainSection = <Login/>;
         } else {
             header = <Header user = {this.state.user}/>;
             mainSection = <RouteHandler user = {this.state.user}/>;

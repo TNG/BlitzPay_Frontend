@@ -24,8 +24,9 @@ var LoadingState = require('./LoadingState.js');
 var Progress = require('./Progress.react');
 var RaisedButton = require('material-ui').RaisedButton;
 var Config = require('../constants/Config');
-var UserActions = require('../actions/UserActions');
 var UsernameInput = require('./UsernameInput');
+var Toggle = require('material-ui').Toggle;
+var Textfield = require('material-ui').TextField;
 
 
 ThemeManager.setTheme(SocialPayTheme);
@@ -78,16 +79,19 @@ var Beer2Peer = React.createClass({
                 LoadingState={LoadingState}
                 Config={Config}
                 UserActions={UserActions}
+                LocalStorage={localStorage}
                 >
                 <RippleSecretInput />
                 <Progress />
                 <RaisedButton />
                 <UsernameInput />
+                <Toggle />
+                <Textfield />
             </Login>);
 
         } else {
             header = <Header user={this.state.user}/>;
-            mainSection = <RouteHandler user={this.state.user}/>;
+            mainSection = <RouteHandler user={this.state.user} LoadingState={LoadingState}/>;
         }
         return (
             <div className="centered">

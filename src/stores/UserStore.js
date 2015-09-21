@@ -37,6 +37,13 @@ function setUser(name, secret) {
     user.rippleAccount = RippleService.getAccountFromSecret(secret);
 }
 
+function storeAndSetUser(name, secret, pin) {
+    var account = RippleService.getAccountFromSecret(secret);
+    CryptoService.encryptSecret(secret, pin, account);
+    localStorage.setItem("name", name);
+    setUser(name, secret);
+}
+
 function directLogin(name, account) {
     console.log('Logging in...');
     user.name = name;
@@ -93,9 +100,7 @@ Beer2PeerDispatcher.register(function (action) {
                 setUser(username, secret);
             } else {
                 pin = action.pin.trim();
-                CryptoService.encryptSecret(secret, pin);
-                localStorage.setItem("name", username);
-                setUser(username, secret);
+                storeAndSetUser(username, secret, pin);
             }
             UserStore.emitUserChange();
             break;

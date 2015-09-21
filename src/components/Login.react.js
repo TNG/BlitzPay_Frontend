@@ -1,31 +1,18 @@
 'use strict';
 
 var React = require('react');
-var TextField = require('material-ui').TextField;
-var RaisedButton = require('material-ui').RaisedButton;
-var Toggle = require('material-ui').Toggle;
-var UserActions = require('../actions/UserActions');
-var Config = require('../constants/Config');
-var RippleSecretInput = require('./RippleSecretInput');
-var UsernameInput = require('./UsernameInput');
-var CodeInput = require('./CodeInput.react');
-
-
-var $ = require('jquery');
-
-var {Progress, LoadingState}  = require('./Progress.react');
-
 
 var Login = React.createClass({
 
     getInitialState() {
-        if(localStorage.getItem("name") && localStorage.getItem("account")) {
+        var localStorage = this.props.LocalStorage;
+        if (localStorage.getItem("name") && localStorage.getItem("account")) {
             console.log("Loading user from localStorage");
-            UserActions.directLogin(localStorage.getItem("name"), localStorage.getItem("account"));
+            this.props.UserActions.directLogin(localStorage.getItem("name"), localStorage.getItem("account"));
         }
         return {
             loadingState: this.props.LoadingState.LOADED,
-            remember: false
+            remember: this.props.remember || false
         };
     },
 
@@ -46,8 +33,8 @@ var Login = React.createClass({
                 pin = this.refs.pinInput.getValue();
                 if (pin === "" || pin.length < 5) {
                     this.setState({
-                        pinErrorText: (pin==="" ? "PIN can not be empty" : "The PIN must have at least 5 digits."),
-                        loadingState: LoadingState.LOADED
+                        pinErrorText: (pin === "" ? "PIN can not be empty" : "The PIN must have at least 5 digits."),
+                        loadingState: this.props.LoadingState.LOADED
                     });
                     return;
                 }
@@ -57,28 +44,35 @@ var Login = React.createClass({
     },
     directLogin: function () {
         this.setState({
-            loadingState: LoadingState.LOADING
+            loadingState: this.props.LoadingState.LOADING
         });
-
-        var name = localStorage.getItem("name");
-        var account = localStorage.getItem("account");
-        UserActions.directLogin(name, account);
+        var name = this.props.LocalStorage.getItem("name");
+        var account = this.props.LocalStorage.getItem("account");
+        this.props.UserActions.directLogin(name, account);
     },
 
     componentWillReceiveProps: function (nextProps) {
         this.setState({
             isInvalid: nextProps.isInvalid,
-            loadingState: LoadingState.LOADED
+            loadingState: this.props.LoadingState.LOADED
         });
     },
 
-    directLogin: function () {
-        this.setState({
-            loadingState: LoadingState.LOADING
-        });
+    render: function () {
+        var progress = this.getProgress();
+        var form = this.getDefaultForm(progress);
+
+        return (
+            <div>
+                <img src={this.props.Config.serverOptions.url + "/images/logo.png"} width="100"
+                     style={{paddingTop: "50px"}}></img>
+                {form}
+            </div>
+        );
+    },
 
     getProgress: function () {
-        var style= {
+        var style = {
             fontSize: "80%",
             color: "#757575"
         };
@@ -94,14 +88,17 @@ var Login = React.createClass({
     },
 
     getDefaultForm: function (progress) {
-        var remember;
+        var rememberInput;
         if (this.state.remember) {
-            remember = <TextField ref="pinInput"
-                                  type="password"
-                                  floatingLabelText="Encryption PIN"
-                                  onChange={this._handlePINInputChange}
-                                  errorText={this.state.pinErrorText}
-                                  style={{width: '18em'}}/>;
+            rememberInput = this.props.children[5];
+            rememberInput = React.addons.cloneWithProps(rememberInput, {
+                ref: "pinInput",
+                type: "password",
+                floatingLabelText: "Encryption PIN",
+                onChange: this._handlePINInputChange,
+                errorText: this.state.pinErrorText,
+                style: {width: '18em'}
+            });
         }
         var raisedButton = this.props.children[2];
         raisedButton = React.addons.cloneWithProps(raisedButton, {
@@ -120,29 +117,30 @@ var Login = React.createClass({
             ref: "rippleSecretInput"
         });
 
+        var rememberToggle = this.props.children[4];
+        rememberToggle = React.addons.cloneWithProps(rememberToggle, {
+            ref: "rememberToggle",
+            label: "Remember me?",
+            onToggle: this._handleRememberChange,
+            style: {textAlign: "left"}
+        });
+
         return (
-            <div>
-                <img src={this.props.Config.serverOptions.url + "/images/logo.png"} width="100" style={{paddingTop: "50px"}}></img>
-                <form
-                    onSubmit={this.login}
+            <form
+                onSubmit={this.login}
                 >
-                    {usernameInput}
-                    <br />
-                    {rippleSecretInput}
-                    <br/>
-                    <br/>
-                    <Toggle
-                        ref="remember"
-                        label="Remember me?"
-                        onToggle={this._handleRememberChange}
-                        style={{textAlign: "left"}}/>
-                    {remember}
-                    <br/>
-                    <br/>
-                    {raisedButton}
-                    {progress}
-                </form>
-            </div>
+                {usernameInput}
+                <br />
+                {rippleSecretInput}
+                <br/>
+                <br/>
+                {rememberToggle}
+                {rememberInput}
+                <br/>
+                <br/>
+                {raisedButton}
+                {progress}
+            </form>
         );
     },
 
@@ -151,13 +149,6 @@ var Login = React.createClass({
         this.setState({
             isInvalid: false,
             pinErrorText: value.length >= 5 ? '' : 'The PIN must have at least 5 digits.'
-        });
-    },
-
-    _handleFormSwitch: function () {
-        this.setState({
-            loadingState: LoadingState.LOADED,
-            pinForm: false
         });
     },
 

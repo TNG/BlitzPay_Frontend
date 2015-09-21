@@ -15,7 +15,8 @@ var ripple = require('ripple-lib');
 
 var Colors = require('material-ui').Styles.Colors;
 
-var {Progress, LoadingState} = require('./Progress.react');
+var Progress = require('./Progress.react');
+var LoadingState = require('./LoadingState');
 
 var Table = mui.Table;
 var Card = mui.Card;
@@ -29,7 +30,7 @@ var Show = React.createClass({
         var that = this;
         var eventCode = this.props.params.eventCode;
 
-        EventService.queryEvent(eventCode, function(event, status) {
+        EventService.queryEvent(eventCode, function(event) {
             console.log('found event ', event);
 
             RippleService.subscribeToTransactionsForEvent(event.recipientRippleAccountId, eventCode, function(newT) {

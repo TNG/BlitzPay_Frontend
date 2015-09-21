@@ -19,7 +19,8 @@ var UserStore = require('../stores/UserStore');
 var ripple = require('ripple-lib');
 var CryptoService = require('../services/CryptoService');
 
-var {Progress, LoadingState}  = require('./Progress.react');
+var Progress = require('./Progress.react');
+var LoadingState = require('./LoadingState');
 
 var PaymentState = keyMirror({
     PAID: null,
@@ -56,10 +57,19 @@ var Pay = React.createClass({
                     pinError: "Invalid PIN!"
                 });
                 return;
+            } else if (!RippleService.isSecretValid(secret)) {
+                return false;
             }
         }
 
         var amount = this.refs.amountField.getValue().replace(',', '.');
+
+        /*if(amount <= 0) {
+            this.setState({
+                amountError: "Amount has to be positive",
+                loadingState: LoadingState.LOADED
+            });
+        }*/
 
         var rippleAmount = ripple.Amount.from_human(amount + ' ' + this.state.currency);
 
@@ -103,7 +113,6 @@ var Pay = React.createClass({
     },
 
     render: function () {
-        var error = this.state.pinError;
         var pinField;
         if(localStorage.getItem("account")) {
             pinField = (
@@ -111,7 +120,7 @@ var Pay = React.createClass({
                     <TextField ref="pinField"
                                type="password"
                                floatingLabelText="Secret decryption PIN"
-                               errorText={error}
+                               errorText={this.state.pinError}
                                onChange={this._handlePINInputChange}
                                style={{width: '18em'}}/>
                     <br/>
@@ -138,6 +147,7 @@ var Pay = React.createClass({
                                    step="0.01"
                                    type="number"
                                    floatingLabelText="EUR"
+                                   errorText={this.state.amountError}
                             />
                         <br/>
                         {pinField}
@@ -154,9 +164,7 @@ var Pay = React.createClass({
         this.setState({
             pinError: value.length >= 5 ? '' : 'The PIN must have at least 5 digits.'
         });
-    },
-
-
+    }
 });
 
 Pay.contextTypes = {

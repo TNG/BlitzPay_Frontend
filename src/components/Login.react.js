@@ -47,9 +47,9 @@ var Login = React.createClass({
             var pin = "";
             if (this.state.remember) {
                 pin = this.refs.pinInput.getValue();
-                if (pin === "") {
+                if (pin === "" || pin.length < 5) {
                     this.setState({
-                        pinErrorText: "PIN can not be empty",
+                        pinErrorText: (pin==="" ? "PIN can not be empty" : "The PIN must have at least 5 digits."),
                         loadingState: LoadingState.LOADED
                     });
                     return;

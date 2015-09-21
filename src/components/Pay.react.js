@@ -17,7 +17,7 @@ var keyMirror = require('keymirror');
 var UserStore = require('../stores/UserStore');
 
 var ripple = require('ripple-lib');
-var CryptoJS = require('crypto-js');
+var CryptoService = require('../services/CryptoService');
 
 var {Progress, LoadingState}  = require('./Progress.react');
 
@@ -50,7 +50,7 @@ var Pay = React.createClass({
                 });
                 return;
             }
-            secret = this.decryptSecret(pin);
+            secret = CryptoService.decryptSecret(pin);
             if(!secret) {
                 this.setState({
                     pinError: "Invalid PIN!"
@@ -156,25 +156,7 @@ var Pay = React.createClass({
         });
     },
 
-    decryptSecret: function decryptSecret(pin) {
-        var salt = CryptoJS.enc.Hex.parse(localStorage.getItem("salt"));
-        var iv = CryptoJS.enc.Hex.parse(localStorage.getItem("iv"));
-        var secretEncrypted = localStorage.getItem("secret");
 
-        var key = CryptoJS.PBKDF2(pin, salt, {keySize: 128 / 32, iterations: 100});
-        var secretDecrypted = CryptoJS.AES.decrypt(secretEncrypted, key, {'iv': iv});
-
-        try {
-            var secret = secretDecrypted.toString(CryptoJS.enc.Utf8);
-            if (RippleService.isSecretValid(secret)) {
-                return secret;
-            } else {
-                return false;
-            }
-        } catch (e) {
-            return false;
-        }
-    }
 });
 
 Pay.contextTypes = {

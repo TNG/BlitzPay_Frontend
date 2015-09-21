@@ -7,7 +7,7 @@
 var Beer2PeerDispatcher = require('../dispatcher/Beer2PeerDispatcher');
 var EventEmitter = require('events').EventEmitter;
 var assign = require('object-assign');
-var CryptoJS = require("crypto-js");
+var CryptoService = require("../services/CryptoService");
 
 var UserConstants = require('../constants/UserConstants.js');
 
@@ -41,22 +41,6 @@ function directLogin(name, account) {
     console.log('Logging in...');
     user.name = name;
     user.rippleAccount = account;
-}
-
-function encryptUser(name, secret, pin) {
-    var salt = CryptoJS.lib.WordArray.random(128 / 8);
-    var key = CryptoJS.PBKDF2(pin, salt, {keySize: 128 / 32, iterations: 100});
-    var iv = CryptoJS.lib.WordArray.random(128 / 8);
-    var secretEncrypted = CryptoJS.AES.encrypt(secret, key, {'iv': iv});
-    var account = RippleService.getAccountFromSecret(secret);
-
-    localStorage.setItem("salt", salt);
-    localStorage.setItem("iv", iv);
-    localStorage.setItem("secret", secretEncrypted);
-    localStorage.setItem("name", name);
-    localStorage.setItem("account", account);
-
-    setUser(name, secret);
 }
 
 function logout() {
@@ -109,8 +93,9 @@ Beer2PeerDispatcher.register(function (action) {
                 setUser(username, secret);
             } else {
                 pin = action.pin.trim();
-                encryptUser(username, secret, pin);
-
+                CryptoService.encryptSecret(secret, pin);
+                localStorage.setItem("name", username);
+                setUser(username, secret);
             }
             UserStore.emitUserChange();
             break;

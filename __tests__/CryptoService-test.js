@@ -40,4 +40,16 @@ describe('Login page', function () {
 
         expect(decryptedSecret).toBe(secret);
     });
+
+    it('should not decrypt with wrong pin', function () {
+        var secret = "secret";
+        var pin = "12345";
+        var account = "account";
+        CryptoService.encryptSecret(secret, pin, account);
+
+        var wrongPin = "65432";
+        var decryptedSecret = CryptoService.decryptSecret(wrongPin);
+
+        expect(decryptedSecret).toNotBe(secret);
+    });
 });

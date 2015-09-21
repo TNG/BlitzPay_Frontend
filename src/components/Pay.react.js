@@ -64,13 +64,6 @@ var Pay = React.createClass({
 
         var amount = this.refs.amountField.getValue().replace(',', '.');
 
-        /*if(amount <= 0) {
-            this.setState({
-                amountError: "Amount has to be positive",
-                loadingState: LoadingState.LOADED
-            });
-        }*/
-
         var rippleAmount = ripple.Amount.from_human(amount + ' ' + this.state.currency);
 
         this.setState({

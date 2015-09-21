@@ -18,17 +18,27 @@ var Login = require('./Login.react');
 
 var RippleListener = require('../services/RippleListener');
 
+var RippleSecretInput = require('./RippleSecretInput');
+var LoadingState = require('./LoadingState.js');
+
+var Progress = require('./Progress.react');
+var RaisedButton = require('material-ui').RaisedButton;
+var Config = require('../constants/Config');
+var UserActions = require('../actions/UserActions');
+var UsernameInput = require('./UsernameInput');
+
+
 ThemeManager.setTheme(SocialPayTheme);
 
 var Beer2Peer = React.createClass({
 
-    getInitialState: function() {
+    getInitialState: function () {
         return {
             user: UserStore.getUser()
         };
     },
 
-    componentWillMount: function() {
+    componentWillMount: function () {
         UserStore.addUserChangeListener(this.onUserChange);
         UserStore.addBalanceChangeListener(this.setUserFromStore);
 
@@ -36,17 +46,17 @@ var Beer2Peer = React.createClass({
             UserActions.directLogin(localStorage.getItem("name"), localStorage.getItem("account"));
         }
     },
-    componentWillUnmount: function() {
+    componentWillUnmount: function () {
         UserStore.removeUserChangeListener(this.onUserChange);
         UserStore.removeBalanceChangeListener(this.setUserFromStore);
     },
 
-    onUserChange: function() {
+    onUserChange: function () {
         this.setUserFromStore();
         RippleListener.listenToBalanceChanges(this.state.user.rippleAccount);
     },
 
-    setUserFromStore: function() {
+    setUserFromStore: function () {
         var user = UserStore.getUser();
         this.setState({user: user});
     },
@@ -60,14 +70,24 @@ var Beer2Peer = React.createClass({
         return {muiTheme: ThemeManager.getCurrentTheme()};
     },
 
-    render: function() {
+    render: function () {
         var mainSection;
         var header;
         if (!this.state.user.isLoggedIn()) {
-            mainSection = <Login/>;
+            mainSection = (<Login
+                LoadingState={LoadingState}
+                Config={Config}
+                UserActions={UserActions}
+                >
+                <RippleSecretInput />
+                <Progress />
+                <RaisedButton />
+                <UsernameInput />
+            </Login>);
+
         } else {
-            header = <Header user = {this.state.user}/>;
-            mainSection = <RouteHandler user = {this.state.user}/>;
+            header = <Header user={this.state.user}/>;
+            mainSection = <RouteHandler user={this.state.user}/>;
         }
         return (
             <div className="centered">

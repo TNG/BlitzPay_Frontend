@@ -1,6 +1,3 @@
-/**
- * Created by kknauf on 13.06.15.
- */
 'use strict';
 
 var React = require('react');
@@ -27,7 +24,7 @@ var Login = React.createClass({
             UserActions.directLogin(localStorage.getItem("name"), localStorage.getItem("account"));
         }
         return {
-            loadingState: LoadingState.LOADED,
+            loadingState: this.props.LoadingState.LOADED,
             remember: false
         };
     },
@@ -40,7 +37,7 @@ var Login = React.createClass({
 
         if (this.refs.rippleSecretInput.isValid() && this.refs.usernameInput.isValid()) {
             this.setState({
-                loadingState: LoadingState.LOADING
+                loadingState: this.props.LoadingState.LOADING
             });
             var username = this.refs.usernameInput.getValue();
             var secret = this.refs.rippleSecretInput.getValue();
@@ -55,10 +52,9 @@ var Login = React.createClass({
                     return;
                 }
             }
-            UserActions.loginUser(username, secret, pin);
+            this.props.UserActions.loginUser(username, secret, pin);
         }
     },
-
     directLogin: function () {
         this.setState({
             loadingState: LoadingState.LOADING
@@ -76,27 +72,21 @@ var Login = React.createClass({
         });
     },
 
-    render: function () {
-        var progress = this.getProgress();
-        var form = this.getDefaultForm(progress);
-
-        return (
-            <div>
-                <img src={Config.serverOptions.url + "/images/logo.png"} width="100" style={{paddingTop: "50px"}}></img>
-                {form}
-            </div>
-        );
-    },
+    directLogin: function () {
+        this.setState({
+            loadingState: LoadingState.LOADING
+        });
 
     getProgress: function () {
-        var style = {
+        var style= {
             fontSize: "80%",
             color: "#757575"
         };
 
         var progress;
-        if (this.state.loadingState === LoadingState.LOADING) {
-            progress = <Progress />;
+
+        if (this.state.loadingState === this.props.LoadingState.LOADING) {
+            progress = this.props.children[1];
         } else {
             progress = <span style={style}><p>Login with any name and your Ripple secret.</p></span>;
         }
@@ -113,24 +103,46 @@ var Login = React.createClass({
                                   errorText={this.state.pinErrorText}
                                   style={{width: '18em'}}/>;
         }
+        var raisedButton = this.props.children[2];
+        raisedButton = React.addons.cloneWithProps(raisedButton, {
+            type: "submit",
+            label: "Login",
+            primary: true
+        });
+
+        var usernameInput = this.props.children[3];
+        usernameInput = React.addons.cloneWithProps(usernameInput, {
+            ref: "usernameInput"
+        });
+
+        var rippleSecretInput = this.props.children[0];
+        rippleSecretInput = React.addons.cloneWithProps(rippleSecretInput, {
+            ref: "rippleSecretInput"
+        });
+
         return (
-            <form onSubmit={this.login}>
-                <UsernameInput ref="usernameInput"/>
-                <br />
-                <RippleSecretInput ref="rippleSecretInput"/>
-                <br/>
-                <br/>
-                <Toggle
-                    ref="remember"
-                    label="Remember me?"
-                    onToggle={this._handleRememberChange}
-                    style={{textAlign: "left"}}/>
-                {remember}
-                <br/>
-                <br/>
-                <RaisedButton type="submit" label='Login' primary={true}/>
-                {progress}
-            </form>
+            <div>
+                <img src={this.props.Config.serverOptions.url + "/images/logo.png"} width="100" style={{paddingTop: "50px"}}></img>
+                <form
+                    onSubmit={this.login}
+                >
+                    {usernameInput}
+                    <br />
+                    {rippleSecretInput}
+                    <br/>
+                    <br/>
+                    <Toggle
+                        ref="remember"
+                        label="Remember me?"
+                        onToggle={this._handleRememberChange}
+                        style={{textAlign: "left"}}/>
+                    {remember}
+                    <br/>
+                    <br/>
+                    {raisedButton}
+                    {progress}
+                </form>
+            </div>
         );
     },
 
@@ -155,6 +167,7 @@ var Login = React.createClass({
         });
     }
 });
+
 
 Login.contextTypes = {
     router: React.PropTypes.func

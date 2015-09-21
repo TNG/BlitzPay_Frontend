@@ -7,26 +7,26 @@
 var React = require('react');
 var TextField = require('material-ui').TextField;
 
-var RippleService= require('../services/RippleService');
+var RippleService = require('../services/RippleService');
 
 var RippleSecretInput = React.createClass({
 
 
-    getInitialState: function() {
+    getInitialState: function () {
         return {
             errorText: ''
         };
     },
 
-    isValid: function() {
+    isValid: function () {
         return RippleService.isSecretValid(this.refs.secret.getValue());
     },
 
-    getValue: function() {
+    getValue: function () {
         return this.refs.secret.getValue();
     },
 
-    validate: function() {
+    validate: function () {
         if (this.isValid()) {
             this.setState({errorText: ''});
         } else {
@@ -34,12 +34,12 @@ var RippleSecretInput = React.createClass({
         }
     },
 
-    render: function() {
+    render: function () {
         return (
             <TextField
                 type="password"
                 ref="secret"
-                onKeyUp = {this.validate}
+                onKeyUp={this.validate}
                 floatingLabelText="Ripple Secret"
                 errorText={this.state.errorText}
                 style={{width: '18em'}}

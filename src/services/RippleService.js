@@ -25,7 +25,56 @@ var RippleService = {
         return ripple.Seed.from_json(secret).get_key().get_address().to_json();
     },
 
-    pay: function(userName, senderSecret, recipientAccount, amount, eventCode, callback) {
+    connectAccount: function (senderSecret, callback) {
+        var senderAccount = this.getAccountFromSecret(senderSecret);
+        this.remote.setSecret(senderAccount, senderSecret);
+
+        var transaction = this.remote.createTransaction('TrustSet', {
+            account: senderAccount,
+            limit: "1000/TNG/" + Config.bankAccount
+        });
+        transaction.submit(function(err) {
+            if (err) {
+                console.log('- Transaction Submit Callback Error -');
+                console.log(err);
+                callback(false);
+            }
+            else {
+                console.log('- Transaction Submit Callback -');
+                callback(true);
+            }
+        });
+    },
+
+    giveMoney: function (recipientAccount, amount, callback) {
+        this.remote.setSecret(Config.bankAccount, "SECRET_PLACEHOLDER");
+
+        var rippleAmount = ripple.Amount.from_human(amount + ' TNG');
+        rippleAmount.set_issuer(Config.bankAccount);
+        var sendMax = rippleAmount.scale(SEND_MAX_FACTOR).set_issuer(Config.bankAccount);
+
+        var transaction = this.remote.createTransaction('Payment', {
+            account: Config.bankAccount,
+            destination: recipientAccount,
+            amount: rippleAmount
+        });
+        transaction.setSendMax(sendMax);
+
+        transaction.submit(function(err) {
+            if (err) {
+                console.log('- Transaction Submit Callback Error -');
+                console.log(err);
+                callback(false);
+            }
+            else {
+                console.log('- Transaction Submit Callback -');
+                callback(true);
+            }
+        });
+
+    },
+
+    pay: function (userName, senderSecret, recipientAccount, amount, eventCode, callback) {
         console.log('Pay was called with ' + senderSecret + ' ' + recipientAccount + ' ' + amount);
 
         var senderAccount = this.getAccountFromSecret(senderSecret);
@@ -37,9 +86,8 @@ var RippleService = {
         console.log('amount: ' + amount.to_human_full());
         console.log('sendMax: ' + sendMax.to_human_full());
 
-        // TODO set dynamically
-        sendMax.set_issuer('rMwjYedjc7qqtKYVLiAccJSmCwih4LnE2q');
-        amount.set_issuer('rMwjYedjc7qqtKYVLiAccJSmCwih4LnE2q');
+        sendMax.set_issuer(Config.bankAccount);
+        amount.set_issuer(Config.bankAccount);
 
         var tx = this.remote.createTransaction('Payment', {
             account: senderAccount,
@@ -57,13 +105,13 @@ var RippleService = {
             }
         });
 
-        tx.on('state', function(state) {
+        tx.on('state', function (state) {
             console.log('tx state changed to ' + state);
         });
 
         console.log('tx to be submitted: ', tx.tx_json);
 
-        tx.submit(function(err, res) {
+        tx.submit(function (err) {
             if (err) {
                 console.log('- Transaction Submit Callback Error -');
                 console.log(err);
@@ -76,7 +124,7 @@ var RippleService = {
         });
     },
 
-    requestTransactionsForEvent: function(recipientAccount, eventCode, callback) {
+    requestTransactionsForEvent: function (recipientAccount, eventCode, callback) {
         var that = this;
 
         var opts = {
@@ -86,7 +134,7 @@ var RippleService = {
             limit: 100, // at some point we might want to implement paging
             forward: false
         };
-        this.remote.requestAccountTransactions(opts, function(err, resp) {
+        this.remote.requestAccountTransactions(opts, function (err, resp) {
             if (err) {
                 console.log("request account tx error", err);
                 callback(false);
@@ -95,10 +143,10 @@ var RippleService = {
             console.log("requestAccountTransactions resp", resp);
 
             var ts = resp.transactions.
-                filter(function(t) {
+                filter(function (t) {
                     return that._isIncomingPaymentForEvent(t.tx, recipientAccount, eventCode);
                 }).
-                map(function(t) {
+                map(function (t) {
                     return that._convertTxToInternalTransaction(t.tx, t.meta);
                 });
 
@@ -108,10 +156,10 @@ var RippleService = {
         });
     },
 
-    startListeningToBalanceChanges: function(accountString, callback) {
+    startListeningToBalanceChanges: function (accountString, callback) {
         var account = this.remote.findAccount(accountString);
         console.log('Getting balance: ', account._events);
-        var lineHandler = function(err, res) {
+        var lineHandler = function (err, res) {
             if (err) {
                 console.log('balance load error', err);
                 callback(false, null);
@@ -120,29 +168,29 @@ var RippleService = {
             console.log('lines', res);
 
             var balances = res.lines.
-                map(function(l) {
-                   return ripple.Amount.from_json({
-                       currency: l.currency,
-                       issuer: l.account,
-                       value: l.balance
-                   });
+                map(function (l) {
+                    return ripple.Amount.from_json({
+                        currency: l.currency,
+                        issuer: l.account,
+                        value: l.balance
+                    });
                 });
 
             callback(true, balances);
         };
 
         account.lines(lineHandler);
-        account.on('transaction', function() {
+        account.on('transaction', function () {
             account.lines(lineHandler);
         });
     },
 
-    stopListeningToBalanceChanges: function(accountString) {
+    stopListeningToBalanceChanges: function (accountString) {
         var account = this.remote.findAccount(accountString);
         account.removeAllListeners('transaction');
     },
 
-    _isIncomingPaymentForEvent: function(tx, recipientAccount, eventCode) {
+    _isIncomingPaymentForEvent: function (tx, recipientAccount, eventCode) {
         var isPaymentToDest = tx.TransactionType === 'Payment' && tx.Destination === recipientAccount;
 
         var memoData = this._getOurMemoData(tx.Memos);
@@ -151,7 +199,7 @@ var RippleService = {
         return isPaymentToDest && isForEvent;
     },
 
-    _convertTxToInternalTransaction: function(tx, meta) {
+    _convertTxToInternalTransaction: function (tx, meta) {
         var memoData = this._getOurMemoData(tx.Memos);
 
         return {
@@ -161,7 +209,7 @@ var RippleService = {
         };
     },
 
-    subscribeToTransactionsForEvent: function(recipientAccount, eventCode, callback) {
+    subscribeToTransactionsForEvent: function (recipientAccount, eventCode, callback) {
         var that = this;
 
         console.log('starting to listen to account events ', recipientAccount);
@@ -170,7 +218,7 @@ var RippleService = {
 
         console.log("Incoming Transaction", account._events);
 
-        account.on('transaction-inbound', function(netT) {
+        account.on('transaction-inbound', function (netT) {
             console.log('new transaction pushed from network ', netT);
 
             var tx = netT.transaction;
@@ -182,7 +230,7 @@ var RippleService = {
         });
     },
 
-    _parseMemoData: function(memo) {
+    _parseMemoData: function (memo) {
         if (memo.MemoType !== undefined) {
             memo.parsed_memo_type = convertHexToString(memo.MemoType);
         }
@@ -200,7 +248,7 @@ var RippleService = {
         return memo;
     },
 
-    _getOurMemoData: function(memos) {
+    _getOurMemoData: function (memos) {
         var that = this;
 
         if (!memos) {
@@ -208,10 +256,10 @@ var RippleService = {
         }
 
         var ourMemos = memos.
-            map(function(m) {
+            map(function (m) {
                 return that._parseMemoData(m.Memo);
             }).
-            filter(function(m) {
+            filter(function (m) {
                 return m.parsed_memo_type === 'beer2peer' && m.parsed_memo_format === 'json';
             });
 
@@ -222,17 +270,16 @@ var RippleService = {
         }
     },
 
-    _connectToRemote: function() {
+    _connectToRemote: function () {
         var remote = this.remote = new Remote(Config.rippleOptions);
 
         remote.on('error', function (error) {
             console.log('remote error: ', error);
         });
 
-        remote.connect(function (err, res) {
+        remote.connect(function (err) {
             if (err) {
                 console.log("error connecting", err);
-                return;
             }
         });
     }

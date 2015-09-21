@@ -24,6 +24,7 @@ var Header = React.createClass({
 
         var menuItems = [];
 
+        menuItems.push({route:'admin', text: 'Admin'});
         if (this.props.user.name !== '') {
             menuItems.push({ route:'join', text: 'Logout' });
         } else {
@@ -92,7 +93,9 @@ var Header = React.createClass({
     },
 
     onLeftNavChange: function(e, key, payload) {
-        UserActions.logout();
+        if(payload.text === 'Logout') {
+            UserActions.logout();
+        }
         this.context.router.transitionTo(payload.route);
     },
 

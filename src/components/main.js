@@ -13,6 +13,7 @@ var Join = require('./Join.react');
 var Show = require('./Show.react');
 var Pay = require('./Pay.react');
 var Query = require('./Query.react');
+var Admin = require('./Admin.react');
 
 var injectTapEventPlugin = require("react-tap-event-plugin");
 injectTapEventPlugin();
@@ -25,6 +26,7 @@ var Routes = (
     <Route name='show' path='show/:eventCode' handler = {Show} />
     <Route name='query' handler= {Query} />
     <Route name='pay' path='pay/:eventCode' handler = {Pay} />
+    <Route name='admin' handler= {Admin} />
   </Route>
 );
 
